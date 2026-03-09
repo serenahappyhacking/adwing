@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  stores        Store[]
+  adAccounts    AdAccount[]
+  agentRuns     AgentRun[]
+  subscription  Subscription?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Shopify Store ───────────────────────────────────────────────────────────
+
+model Store {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopDomain      String   @unique
+  accessToken     String
+  name            String?
+  currency        String   @default("USD")
+  products        Product[]
+  healthScore     Int?
+  lastSyncAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  shopifyId       String
+  title           String
+  description     String?
+  productType     String?
+  vendor          String?
+  price           Float?
+  compareAtPrice  Float?
+  imageUrl        String?
+  status          String   @default("active")
+  tags            String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([storeId, shopifyId])
+}
+
+// ─── Ad Accounts ─────────────────────────────────────────────────────────────
+
+model AdAccount {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform        String   @default("META")
+  accountId       String
+  accountName     String?
+  accessToken     String
+  refreshToken    String?
+  tokenExpiresAt  DateTime?
+  currency        String   @default("USD")
+  timezone        String   @default("America/New_York")
+  isActive        Boolean  @default(true)
+  campaigns       Campaign[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([platform, accountId])
+}
+
+model Campaign {
+  id              String   @id @default(cuid())
+  adAccountId     String
+  adAccount       AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  platformCampaignId String?
+  name            String
+  status          String   @default("DRAFT")
+  objective       String?
+  dailyBudget     Float?
+  lifetimeBudget  Float?
+  startDate       DateTime?
+  endDate         DateTime?
+  metrics         CampaignMetrics[]
+  adCopies        AdCopy[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CampaignMetrics {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  date        DateTime
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  spend       Float    @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpm         Float?
+  roas        Float?
+  createdAt   DateTime @default(now())
+
+  @@unique([campaignId, date])
+}
+
+// ─── Creative ────────────────────────────────────────────────────────────────
+
+model AdCopy {
+  id            String   @id @default(cuid())
+  campaignId    String?
+  campaign      Campaign? @relation(fields: [campaignId], references: [id])
+  agentRunId    String?
+  agentRun      AgentRun? @relation(fields: [agentRunId], references: [id])
+  headline      String
+  primaryText   String
+  description   String?
+  cta           String?
+  hook          String?
+  format        String   @default("SINGLE_IMAGE")
+  language      String   @default("en")
+  qualityScore  Float?
+  status        String   @default("GENERATED")
+  metadata      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── Competitor Intelligence ─────────────────────────────────────────────────
+
+model CompetitorAd {
+  id              String   @id @default(cuid())
+  userId          String
+  platform        String   @default("META")
+  advertiserName  String
+  pageId          String?
+  headline        String?
+  bodyText        String?
+  ctaType         String?
+  mediaType       String?
+  mediaUrl        String?
+  startDate       DateTime?
+  isActive        Boolean  @default(true)
+  niche           String?
+  analysis        String?
+  createdAt       DateTime @default(now())
+}
+
+// ─── Agent Runs ──────────────────────────────────────────────────────────────
+
+model AgentRun {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crewType    String   @default("INTELLIGENCE")
+  status      String   @default("QUEUED")
+  input       String?
+  output      String?
+  error       String?
+  adCopies    AdCopy[]
+  durationMs  Int?
+  tokensUsed  Int?
+  costUsd     Float?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+}
+
+// ─── Strategy ────────────────────────────────────────────────────────────────
+
+model StrategyReport {
+  id                String   @id @default(cuid())
+  userId            String
+  weekStart         DateTime
+  healthScore       Int
+  totalSpend        Float
+  totalRevenue      Float
+  overallRoas       Float
+  recommendations   String
+  budgetAllocations String?
+  testSuggestions   String?
+  competitorDigest  String?
+  createdAt         DateTime @default(now())
+}
+
+// ─── Subscription ────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String   @unique
+  stripeSubscriptionId String   @unique
+  plan                 String   @default("STARTER")
+  status               String   @default("active")
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
