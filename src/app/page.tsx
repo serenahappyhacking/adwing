@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-const signInHref = process.env.ANTHROPIC_API_KEY ? "/auth/signin" : "/dashboard";
+const signInHref = "/dashboard";
 
 export default function LandingPage() {
   return (
