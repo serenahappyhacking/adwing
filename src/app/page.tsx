@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
+const signInHref = process.env.ANTHROPIC_API_KEY ? "/auth/signin" : "/dashboard";
+
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -23,10 +25,10 @@ export default function LandingPage() {
             </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="/auth/signin">
+            <Link href={signInHref}>
               <Button variant="ghost">Sign In</Button>
             </Link>
-            <Link href="/auth/signin">
+            <Link href={signInHref}>
               <Button>Start Free Trial</Button>
             </Link>
           </div>
@@ -48,7 +50,7 @@ export default function LandingPage() {
           one dashboard, powered by multi-agent AI.
         </p>
         <div className="mt-10 flex gap-4">
-          <Link href="/auth/signin">
+          <Link href={signInHref}>
             <Button size="lg">Start 7-Day Free Trial</Button>
           </Link>
           <Link href="#how-it-works">
@@ -240,7 +242,7 @@ export default function LandingPage() {
                 <span className="text-muted-foreground">/month</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-              <Link href="/auth/signin">
+              <Link href={signInHref}>
                 <Button
                   className="mt-6 w-full"
                   variant={plan.popular ? "default" : "outline"}
@@ -272,7 +274,7 @@ export default function LandingPage() {
           <p className="mt-4 text-primary-foreground/80">
             Join Shopify sellers who replaced their media buyer with AdWing.
           </p>
-          <Link href="/auth/signin">
+          <Link href={signInHref}>
             <Button size="lg" variant="secondary" className="mt-8">
               Start Your Free Trial
             </Button>
