@@ -100,7 +100,7 @@ export class ShopifyClient {
           compareAtPrice,
           imageUrl: product.images[0]?.src,
           status: product.status,
-          tags: product.tags.split(", ").filter(Boolean),
+          tags: product.tags.split(", ").filter(Boolean).join(","),
         },
         update: {
           title: product.title,
@@ -110,7 +110,7 @@ export class ShopifyClient {
           compareAtPrice,
           imageUrl: product.images[0]?.src,
           status: product.status,
-          tags: product.tags.split(", ").filter(Boolean),
+          tags: product.tags.split(", ").filter(Boolean).join(","),
         },
       });
     }

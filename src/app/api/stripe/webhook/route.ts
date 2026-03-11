@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!);
+}
 
-const PLAN_MAP: Record<string, "STARTER" | "GROWTH" | "SCALE"> = {
-  [process.env.STRIPE_STARTER_PRICE_ID!]: "STARTER",
-  [process.env.STRIPE_GROWTH_PRICE_ID!]: "GROWTH",
-  [process.env.STRIPE_SCALE_PRICE_ID!]: "SCALE",
-};
+function getPlanMap(): Record<string, "STARTER" | "GROWTH" | "SCALE"> {
+  return {
+    [process.env.STRIPE_STARTER_PRICE_ID!]: "STARTER",
+    [process.env.STRIPE_GROWTH_PRICE_ID!]: "GROWTH",
+    [process.env.STRIPE_SCALE_PRICE_ID!]: "SCALE",
+  };
+}
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe();
+  const PLAN_MAP = getPlanMap();
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 

@@ -1,4 +1,4 @@
-import { sonnet } from "../llm";
+import { sonnet, extractTextContent } from "../llm";
 import { CompetitorInsightSchema } from "@/types";
 import type { AdWingStateType } from "../state";
 
@@ -51,9 +51,7 @@ Return ONLY valid JSON matching the schema. No markdown.`;
   ]);
 
   try {
-    const content = typeof response.content === "string"
-      ? response.content
-      : response.content.map((c) => ("text" in c ? c.text : "")).join("");
+    const content = extractTextContent(response);
 
     const parsed = JSON.parse(content);
     const competitorInsight = CompetitorInsightSchema.parse(parsed);

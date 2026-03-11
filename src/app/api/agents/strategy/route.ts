@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { buildStrategyGraph } from "@/agents/graph";
+import { mockStrategyReport, mockBudgetRecommendation } from "@/agents/mock-data";
+
+const isDemoMode = !process.env.ANTHROPIC_API_KEY;
 
 export async function POST(req: NextRequest) {
+  if (isDemoMode) {
+    await new Promise((r) => setTimeout(r, 1500));
+    return NextResponse.json({
+      runId: "demo-strategy",
+      demo: true,
+      strategyReport: mockStrategyReport,
+      budgetRecommendation: mockBudgetRecommendation,
+    });
+  }
+
   const session = await getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,35 +34,41 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    // Get latest intelligence and creative outputs
-    const [intelRun, creativeRun] = await Promise.all([
-      db.agentRun.findFirst({
-        where: { userId, crewType: "INTELLIGENCE", status: "COMPLETED" },
-        orderBy: { completedAt: "desc" },
-      }),
-      db.agentRun.findFirst({
-        where: { userId, crewType: "CREATIVE", status: "COMPLETED" },
-        orderBy: { completedAt: "desc" },
-      }),
-    ]);
+    let strategyReport;
+    let budgetRecommendation;
 
-    const intelOutput = intelRun?.output ? JSON.parse(intelRun.output as string) : null;
-    const creativeOutput = creativeRun?.output ? JSON.parse(creativeRun.output as string) : null;
+    {
+      const [intelRun, creativeRun] = await Promise.all([
+        db.agentRun.findFirst({
+          where: { userId, crewType: "INTELLIGENCE", status: "COMPLETED" },
+          orderBy: { completedAt: "desc" },
+        }),
+        db.agentRun.findFirst({
+          where: { userId, crewType: "CREATIVE", status: "COMPLETED" },
+          orderBy: { completedAt: "desc" },
+        }),
+      ]);
 
-    const graph = buildStrategyGraph();
-    const result = await graph.invoke({
-      userId,
-      adAccountIds: [],
-      planTier: "GROWTH",
-      productCatalog: [],
-      salesData: [],
-      accountHealth: intelOutput?.accountHealth ?? null,
-      competitorInsight: intelOutput?.competitorInsight ?? null,
-      adCopyBatch: creativeOutput?.adCopyBatch ?? null,
-    });
+      const intelOutput = intelRun?.output ? JSON.parse(intelRun.output as string) : null;
+      const creativeOutput = creativeRun?.output ? JSON.parse(creativeRun.output as string) : null;
 
-    // Save strategy report
-    if (result.strategyReport) {
+      const graph = buildStrategyGraph();
+      const result = await graph.invoke({
+        userId,
+        adAccountIds: [],
+        planTier: "GROWTH",
+        productCatalog: [],
+        salesData: [],
+        accountHealth: intelOutput?.accountHealth ?? null,
+        competitorInsight: intelOutput?.competitorInsight ?? null,
+        adCopyBatch: creativeOutput?.adCopyBatch ?? null,
+      });
+
+      strategyReport = result.strategyReport;
+      budgetRecommendation = result.budgetRecommendation;
+    }
+
+    if (strategyReport) {
       const now = new Date();
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay());
@@ -58,13 +77,13 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           weekStart,
-          healthScore: result.strategyReport.healthScore,
-          totalSpend: result.strategyReport.keyMetrics.totalSpend,
-          totalRevenue: result.strategyReport.keyMetrics.totalRevenue,
-          overallRoas: result.strategyReport.keyMetrics.overallRoas,
-          recommendations: JSON.stringify(result.strategyReport.recommendations),
-          budgetAllocations: JSON.stringify(result.budgetRecommendation),
-          testSuggestions: JSON.stringify(result.strategyReport.testSuggestions),
+          healthScore: strategyReport.healthScore,
+          totalSpend: strategyReport.keyMetrics.totalSpend,
+          totalRevenue: strategyReport.keyMetrics.totalRevenue,
+          overallRoas: strategyReport.keyMetrics.overallRoas,
+          recommendations: JSON.stringify(strategyReport.recommendations),
+          budgetAllocations: JSON.stringify(budgetRecommendation),
+          testSuggestions: JSON.stringify(strategyReport.testSuggestions),
         },
       });
     }
@@ -73,10 +92,7 @@ export async function POST(req: NextRequest) {
       where: { id: agentRun.id },
       data: {
         status: "COMPLETED",
-        output: JSON.stringify({
-          strategyReport: result.strategyReport,
-          budgetRecommendation: result.budgetRecommendation,
-        }),
+        output: JSON.stringify({ strategyReport, budgetRecommendation }),
         completedAt: new Date(),
         durationMs: Date.now() - agentRun.startedAt!.getTime(),
       },
@@ -84,8 +100,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       runId: agentRun.id,
-      strategyReport: result.strategyReport,
-      budgetRecommendation: result.budgetRecommendation,
+      demo: isDemoMode,
+      strategyReport,
+      budgetRecommendation,
     });
   } catch (error) {
     await db.agentRun.update({

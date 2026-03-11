@@ -1,4 +1,4 @@
-import { sonnet } from "../llm";
+import { sonnet, extractTextContent } from "../llm";
 import { StrategyReportSchema } from "@/types";
 import type { AdWingStateType } from "../state";
 
@@ -52,9 +52,7 @@ Return ONLY valid JSON. No markdown.`;
   ]);
 
   try {
-    const content = typeof response.content === "string"
-      ? response.content
-      : response.content.map((c) => ("text" in c ? c.text : "")).join("");
+    const content = extractTextContent(response);
 
     const parsed = JSON.parse(content);
     const strategyReport = StrategyReportSchema.parse(parsed);

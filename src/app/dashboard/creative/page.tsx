@@ -21,18 +21,28 @@ export default function CreativePage() {
   const [variants, setVariants] = useState<AdVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [iterations, setIterations] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   async function generateAdCopy() {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch("/api/agents/creative", { method: "POST" });
+      const res = await fetch("/api/agents/creative", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
       const data = await res.json();
-      if (data.adCopyBatch?.variants) {
+      if (!res.ok) {
+        setError(data.error || `Failed (${res.status})`);
+      } else if (data.adCopyBatch?.variants) {
         setVariants(data.adCopyBatch.variants);
         setIterations(data.iterations ?? 0);
+        setIsDemo(data.demo ?? false);
       }
-    } catch (error) {
-      console.error("Creative generation failed:", error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
     }
     setLoading(false);
   }
@@ -64,6 +74,20 @@ export default function CreativePage() {
           )}
         </Button>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          Error: {error}
+        </div>
+      )}
+
+      {isDemo && variants.length > 0 && (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+          <strong>Demo Mode:</strong> Showing sample ad copies. Add{" "}
+          <code className="rounded bg-yellow-100 px-1">ANTHROPIC_API_KEY</code> to{" "}
+          <code className="rounded bg-yellow-100 px-1">.env</code> for AI-generated results.
+        </div>
+      )}
 
       {iterations > 0 && (
         <div className="rounded-lg bg-muted p-3 text-sm">

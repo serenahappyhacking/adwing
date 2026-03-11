@@ -9,7 +9,16 @@ import type {
 
 /**
  * Shared state for the AdWing multi-agent pipeline.
- * Each crew reads from and writes to typed channels.
+ *
+ * Built with LangGraph's Annotation API. Each field is a typed "channel" that
+ * agents read from and write to. Channels use reducers to control how updates
+ * merge — most use "last write wins" (`(_, next) => next`), while `errors` and
+ * `executionResults` use append reducers (`(prev, next) => [...prev, ...next]`)
+ * to accumulate values from multiple agents.
+ *
+ * Data flows unidirectionally through the pipeline:
+ *   Input Context → Intelligence Crew → Creative Crew → Strategy Crew
+ * Each crew reads upstream data and writes its own output channels.
  */
 export const AdWingState = Annotation.Root({
   // ─── Input Context ───────────────────────────────────────────────────

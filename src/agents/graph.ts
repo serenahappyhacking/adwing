@@ -8,9 +8,13 @@ import { budgetOptimizerNode } from "./strategy/budget-optimizer";
 import { strategyReporterNode } from "./strategy/strategy-reporter";
 
 /**
- * Route after evaluator: reflexion loop or continue to strategy.
+ * Conditional routing after the Evaluator node.
+ *
+ * If the Evaluator set `currentCrew` to "creative_reflexion" (score below threshold
+ * and iterations remaining), routes back to the Copywriter for another attempt.
+ * Otherwise, proceeds to the Budget Optimizer (Strategy Crew).
  */
-function routeAfterEvaluator(state: AdWingStateType): string {
+export function routeAfterEvaluator(state: AdWingStateType): string {
   if (state.currentCrew === "creative_reflexion") {
     return "copywriter"; // Go back for another iteration
   }
@@ -18,9 +22,13 @@ function routeAfterEvaluator(state: AdWingStateType): string {
 }
 
 /**
- * Route after intelligence: skip competitor scan for Starter tier.
+ * Conditional routing after the Account Analyst node.
+ *
+ * STARTER tier users skip the Market Scanner (competitor analysis) to reduce
+ * processing time and cost — they go directly to the Creative Crew.
+ * GROWTH and SCALE tiers get the full intelligence pipeline.
  */
-function routeAfterAccountAnalyst(state: AdWingStateType): string {
+export function routeAfterAccountAnalyst(state: AdWingStateType): string {
   if (state.planTier === "STARTER") {
     return "copywriter"; // Skip competitor scan
   }
@@ -28,9 +36,12 @@ function routeAfterAccountAnalyst(state: AdWingStateType): string {
 }
 
 /**
- * Route after budget optimizer: skip strategy report for Starter tier.
+ * Conditional routing after the Budget Optimizer node.
+ *
+ * STARTER tier users skip the Strategy Reporter (comprehensive weekly report)
+ * and go directly to END. GROWTH and SCALE tiers get the full report.
  */
-function routeAfterBudgetOptimizer(state: AdWingStateType): string {
+export function routeAfterBudgetOptimizer(state: AdWingStateType): string {
   if (state.planTier === "STARTER") {
     return END;
   }

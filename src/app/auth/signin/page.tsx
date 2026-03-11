@@ -35,7 +35,13 @@ export default function SignInPage() {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => signIn("shopify", { callbackUrl: "/onboarding" })}
+            onClick={() => {
+              if (!process.env.NEXT_PUBLIC_SHOPIFY_CONFIGURED) {
+                alert("Shopify OAuth is not configured yet. Use email sign-in for the demo.");
+                return;
+              }
+              signIn("shopify", { callbackUrl: "/onboarding" });
+            }}
           >
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M15.337 3.415c-.157-.018-.314.078-.393.235-.08.157-1.728 3.327-1.728 3.327s-1.17-.522-2.582-.34c-2.157.278-2.157 2.097-2.157 2.37 0 1.528 3.94 1.884 3.94 5.138 0 2.543-1.612 4.178-3.786 4.178-2.61 0-3.94-1.625-3.94-1.625l.706-2.33s1.383 1.188 2.553 1.188c.758 0 1.073-.597 1.073-1.032 0-1.996-3.233-2.083-3.233-4.838 0-2.487 1.785-4.897 5.386-4.897 1.383 0 2.073.392 2.073.392l-1.04 3.453"/>

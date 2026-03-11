@@ -1,4 +1,4 @@
-import { sonnet } from "../llm";
+import { sonnet, extractTextContent } from "../llm";
 import { AdCopyBatchSchema } from "@/types";
 import type { AdWingStateType } from "../state";
 
@@ -72,9 +72,7 @@ Return ONLY valid JSON with a "variants" array and "generationReason" string. No
   ]);
 
   try {
-    const content = typeof response.content === "string"
-      ? response.content
-      : response.content.map((c) => ("text" in c ? c.text : "")).join("");
+    const content = extractTextContent(response);
 
     const parsed = JSON.parse(content);
     const batch = AdCopyBatchSchema.parse(parsed);
