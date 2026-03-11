@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { AccountHealth, AdCopyBatch, StrategyReport } from "@/types";
+import { useTranslation } from "@/i18n/context";
 
 interface AgentResult {
   runId: string;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [runningAgent, setRunningAgent] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, AgentResult | null>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const { t } = useTranslation();
 
   async function runAgent(crew: string) {
     setRunningAgent(crew);
@@ -71,7 +73,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Health Score</CardDescription>
+            <CardDescription>{t("dash.healthScore")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
@@ -81,13 +83,13 @@ export default function DashboardPage() {
               <span className="text-sm text-muted-foreground">/100</span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {accountHealth ? "Last updated just now" : "Run audit to calculate"}
+              {accountHealth ? t("dash.lastUpdated") : t("dash.run")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Spend (30d)</CardDescription>
+            <CardDescription>{t("dash.totalSpend")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
@@ -96,13 +98,13 @@ export default function DashboardPage() {
                 : "--"}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {strategyReport ? "From strategy report" : "Connect ad accounts"}
+              {strategyReport ? t("dash.fromStrategy") : "--"}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>ROAS (30d)</CardDescription>
+            <CardDescription>{t("dash.roas")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
@@ -111,20 +113,20 @@ export default function DashboardPage() {
                 : "--"}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {strategyReport ? "From strategy report" : "Connect ad accounts"}
+              {strategyReport ? t("dash.fromStrategy") : "--"}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Ad Copies Generated</CardDescription>
+            <CardDescription>{t("dash.adCopies")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
               {adCopyBatch ? String(adCopyBatch.variants.length) : "0"}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {adCopyBatch ? "Generated just now" : "This month"}
+              {adCopyBatch ? t("dash.justNow") : "--"}
             </p>
           </CardContent>
         </Card>
@@ -133,49 +135,48 @@ export default function DashboardPage() {
       {/* Demo mode banner */}
       {Object.values(results).some((r) => r?.demo) && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-          <strong>Demo Mode:</strong> Showing sample data. Add{" "}
-          <code className="rounded bg-yellow-100 px-1">ANTHROPIC_API_KEY</code> to{" "}
-          <code className="rounded bg-yellow-100 px-1">.env</code> for live AI agent results.
+          <strong>{t("dash.demoBanner.prefix")}</strong> {t("dash.demoBanner.text")}{" "}
+          <code className="rounded bg-yellow-100 px-1">ANTHROPIC_API_KEY</code>{" "}
+          {t("dash.demoBanner.suffix")}
         </div>
       )}
 
       {/* AI Agents */}
       <Card>
         <CardHeader>
-          <CardTitle>AI Agents</CardTitle>
-          <CardDescription>Run individual crews or the full pipeline</CardDescription>
+          <CardTitle>{t("dash.agentCrews")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[
+            {([
               {
                 crew: "intelligence",
-                name: "Intelligence Crew",
-                description: "Analyze ad accounts & Shopify data",
+                nameKey: "crew.intelligence" as const,
+                descKey: "crew.intelligence.desc" as const,
                 agents: ["Account Analyst", "Market Scanner"],
               },
               {
                 crew: "creative",
-                name: "Creative Crew",
-                description: "Generate ad copy variants",
+                nameKey: "crew.creative" as const,
+                descKey: "crew.creative.desc" as const,
                 agents: ["Copywriter", "Evaluator (Reflexion)"],
               },
               {
                 crew: "strategy",
-                name: "Strategy Crew",
-                description: "Budget & audience recommendations",
+                nameKey: "crew.strategy" as const,
+                descKey: "crew.strategy.desc" as const,
                 agents: ["Budget Optimizer", "Strategy Reporter"],
               },
               {
                 crew: "pipeline",
-                name: "Full Pipeline",
-                description: "Run all crews in sequence",
+                nameKey: "crew.pipeline" as const,
+                descKey: "crew.pipeline.desc" as const,
                 agents: ["All agents"],
               },
-            ].map((item) => (
+            ]).map((item) => (
               <div key={item.crew} className="rounded-lg border p-4">
-                <h3 className="font-semibold">{item.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                <h3 className="font-semibold">{t(item.nameKey)}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{t(item.descKey)}</p>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {item.agents.map((agent) => (
                     <Badge key={agent} variant="secondary" className="text-xs">
@@ -205,12 +206,12 @@ export default function DashboardPage() {
                   {runningAgent === item.crew ? (
                     <span className="flex items-center gap-2">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Running...
+                      {t("dash.running")}
                     </span>
                   ) : results[item.crew] ? (
-                    "Run Again"
+                    t("dash.runAgain")
                   ) : (
-                    "Run"
+                    t("dash.run")
                   )}
                 </Button>
               </div>
@@ -222,8 +223,7 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Agent Runs</CardTitle>
-          <CardDescription>History of your AI agent executions</CardDescription>
+          <CardTitle>{t("dash.recentRuns")}</CardTitle>
         </CardHeader>
         <CardContent>
           {Object.keys(results).filter((k) => results[k]).length > 0 ? (
@@ -251,7 +251,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              No agent runs yet. Click &quot;Run&quot; above to get started.
+              {t("dash.noRecentRuns")}
             </div>
           )}
         </CardContent>
@@ -260,10 +260,7 @@ export default function DashboardPage() {
       {/* Alerts */}
       <Card>
         <CardHeader>
-          <CardTitle>Alerts & Opportunities</CardTitle>
-          <CardDescription>
-            Anomalies and improvement suggestions from the Intelligence Crew
-          </CardDescription>
+          <CardTitle>{t("dash.alerts")}</CardTitle>
         </CardHeader>
         <CardContent>
           {accountHealth ? (
@@ -285,7 +282,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              Run the Intelligence Crew to surface alerts and opportunities.
+              {t("dash.noAlerts")}
             </div>
           )}
         </CardContent>

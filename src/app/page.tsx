@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
-const signInHref = "/dashboard";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LangToggle } from "@/components/lang-toggle";
+import { useTranslation } from "@/i18n/context";
 
 export default function LandingPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Nav */}
@@ -15,21 +20,23 @@ export default function LandingPage() {
           </div>
           <nav className="hidden gap-6 md:flex">
             <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
-              Features
+              {t("landing.nav.features")}
             </Link>
             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
-              Pricing
+              {t("landing.nav.pricing")}
             </Link>
             <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">
-              How It Works
+              {t("landing.nav.howItWorks")}
             </Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href={signInHref}>
-              <Button variant="ghost">Sign In</Button>
+          <div className="flex items-center gap-2">
+            <LangToggle />
+            <ThemeToggle />
+            <Link href="/auth/signin">
+              <Button variant="ghost">{t("landing.nav.signIn")}</Button>
             </Link>
-            <Link href={signInHref}>
-              <Button>Start Free Trial</Button>
+            <Link href="/auth/signin">
+              <Button>{t("landing.cta.trial")}</Button>
             </Link>
           </div>
         </div>
@@ -38,29 +45,27 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="container mx-auto flex flex-col items-center px-4 py-24 text-center">
         <div className="inline-flex items-center rounded-full border bg-muted px-4 py-1.5 text-sm">
-          AI-powered advertising for Shopify sellers
+          {t("landing.badge")}
         </div>
         <h1 className="mt-6 max-w-4xl text-5xl font-bold tracking-tight sm:text-6xl">
-          Your AI Media Buyer at{" "}
-          <span className="text-primary">1/30th the Cost</span>
+          {t("landing.hero.title1")}
+          <span className="text-primary">{t("landing.hero.highlight")}</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-          AdWing automates your entire ad workflow: competitor analysis, ad copy
-          generation, budget optimization, and performance reporting. All from
-          one dashboard, powered by multi-agent AI.
+          {t("landing.hero.subtitle")}
         </p>
         <div className="mt-10 flex gap-4">
-          <Link href={signInHref}>
-            <Button size="lg">Start 7-Day Free Trial</Button>
+          <Link href="/auth/signin">
+            <Button size="lg">{t("landing.cta.trial")}</Button>
           </Link>
           <Link href="#how-it-works">
             <Button size="lg" variant="outline">
-              See How It Works
+              {t("landing.cta.how")}
             </Button>
           </Link>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
-          No credit card required. Works with Meta, Google & TikTok Ads.
+          {t("landing.cta.noCreditCard")}
         </p>
       </section>
 
@@ -68,18 +73,18 @@ export default function LandingPage() {
       <section className="border-y bg-muted/50 py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm font-medium text-muted-foreground">
-            TRUSTED BY SHOPIFY SELLERS SPENDING $1K-$50K/MO ON ADS
+            {t("landing.social.trusted")}
           </p>
           <div className="mt-8 grid grid-cols-2 gap-8 md:grid-cols-4">
             {[
-              { metric: "15%+", label: "Avg ROAS Improvement" },
-              { metric: "10hrs", label: "Saved Per Week" },
-              { metric: "$99/mo", label: "vs $3-5K Media Buyer" },
-              { metric: "24/7", label: "Always-On Optimization" },
+              { metric: "15%+", labelKey: "landing.social.roas" as const },
+              { metric: "10hrs", labelKey: "landing.social.saved" as const },
+              { metric: "$99/mo", labelKey: "landing.social.cost" as const },
+              { metric: "24/7", labelKey: "landing.social.always" as const },
             ].map((stat) => (
-              <div key={stat.label}>
+              <div key={stat.labelKey}>
                 <div className="text-3xl font-bold text-primary">{stat.metric}</div>
-                <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{t(stat.labelKey)}</div>
               </div>
             ))}
           </div>
@@ -89,50 +94,45 @@ export default function LandingPage() {
       {/* Features */}
       <section id="features" className="container mx-auto px-4 py-24">
         <div className="text-center">
-          <h2 className="text-3xl font-bold">4 AI Crews Working for You</h2>
+          <h2 className="text-3xl font-bold">{t("landing.features.title")}</h2>
           <p className="mt-4 text-muted-foreground">
-            Not a single chatbot — a coordinated multi-agent system that reads your data,
-            scouts competitors, generates creatives, and optimizes spend.
+            {t("landing.features.subtitle")}
           </p>
         </div>
         <div className="mt-16 grid gap-8 md:grid-cols-2">
           {[
             {
-              title: "Intelligence Crew",
-              description:
-                "Connects to your ad accounts and Shopify store. Analyzes 90 days of data to build a performance baseline. Weekly health score with actionable alerts.",
-              features: ["Performance audit", "Product-level ROAS", "Anomaly detection"],
+              titleKey: "landing.features.intel.title" as const,
+              descKey: "landing.features.intel.desc" as const,
+              featureKeys: ["landing.features.intel.f1", "landing.features.intel.f2", "landing.features.intel.f3"] as const,
             },
             {
-              title: "Creative Crew",
-              description:
-                "Generates 10+ ad variants per cycle with headlines, hooks, and copy. Uses reflexion — an AI evaluator scores and refines output until it meets quality standards.",
-              features: ["10+ variants per cycle", "Brand voice matching", "A/B test generation"],
+              titleKey: "landing.features.creative.title" as const,
+              descKey: "landing.features.creative.desc" as const,
+              featureKeys: ["landing.features.creative.f1", "landing.features.creative.f2", "landing.features.creative.f3"] as const,
             },
             {
-              title: "Strategy Crew",
-              description:
-                "Recommends budget allocation, campaign structure changes, and audience strategies. Produces weekly reports with before/after comparisons.",
-              features: ["Budget optimization", "Audience planning", "Test prioritization"],
+              titleKey: "landing.features.strategy.title" as const,
+              descKey: "landing.features.strategy.desc" as const,
+              featureKeys: ["landing.features.strategy.f1", "landing.features.strategy.f2", "landing.features.strategy.f3"] as const,
             },
             {
-              title: "Competitor Scan",
-              description:
-                "Scans Meta Ad Library and public data to surface what's working in your niche. Identifies gaps competitors are missing.",
-              features: ["Ad creative tracking", "Trend identification", "Gap analysis"],
+              titleKey: "landing.features.competitor.title" as const,
+              descKey: "landing.features.competitor.desc" as const,
+              featureKeys: ["landing.features.competitor.f1", "landing.features.competitor.f2", "landing.features.competitor.f3"] as const,
             },
           ].map((feature) => (
             <div
-              key={feature.title}
+              key={feature.titleKey}
               className="rounded-lg border bg-card p-8"
             >
-              <h3 className="text-xl font-semibold">{feature.title}</h3>
-              <p className="mt-2 text-muted-foreground">{feature.description}</p>
+              <h3 className="text-xl font-semibold">{t(feature.titleKey)}</h3>
+              <p className="mt-2 text-muted-foreground">{t(feature.descKey)}</p>
               <ul className="mt-4 space-y-2">
-                {feature.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm">
+                {feature.featureKeys.map((fk) => (
+                  <li key={fk} className="flex items-center gap-2 text-sm">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    {f}
+                    {t(fk)}
                   </li>
                 ))}
               </ul>
@@ -144,31 +144,19 @@ export default function LandingPage() {
       {/* How It Works */}
       <section id="how-it-works" className="border-y bg-muted/50 py-24">
         <div className="container mx-auto px-4">
-          <h2 className="text-center text-3xl font-bold">5 Minutes to Value</h2>
+          <h2 className="text-center text-3xl font-bold">{t("landing.howItWorks.title")}</h2>
           <div className="mt-16 grid gap-8 md:grid-cols-3">
             {[
-              {
-                step: "1",
-                title: "Connect Your Store",
-                description: "Install from Shopify App Store. Connect your ad accounts (Meta, Google, TikTok).",
-              },
-              {
-                step: "2",
-                title: "AI Runs Initial Audit",
-                description: "Intelligence Crew analyzes 90 days of data. Get your Account Health Score in 2-5 minutes.",
-              },
-              {
-                step: "3",
-                title: "Review & Approve",
-                description: "AI proposes ad copy, budget changes, and strategies. You preview and approve before anything goes live.",
-              },
+              { step: "1", titleKey: "landing.howItWorks.step1.title" as const, descKey: "landing.howItWorks.step1.desc" as const },
+              { step: "2", titleKey: "landing.howItWorks.step2.title" as const, descKey: "landing.howItWorks.step2.desc" as const },
+              { step: "3", titleKey: "landing.howItWorks.step3.title" as const, descKey: "landing.howItWorks.step3.desc" as const },
             ].map((step) => (
               <div key={step.step} className="text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                   {step.step}
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
+                <h3 className="mt-4 text-lg font-semibold">{t(step.titleKey)}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t(step.descKey)}</p>
               </div>
             ))}
           </div>
@@ -177,16 +165,16 @@ export default function LandingPage() {
 
       {/* Pricing */}
       <section id="pricing" className="container mx-auto px-4 py-24">
-        <h2 className="text-center text-3xl font-bold">Simple, Transparent Pricing</h2>
+        <h2 className="text-center text-3xl font-bold">{t("landing.pricing.title")}</h2>
         <p className="mt-4 text-center text-muted-foreground">
-          7-day free trial. No credit card required. Cancel anytime.
+          {t("landing.pricing.subtitle")}
         </p>
         <div className="mt-16 grid gap-8 md:grid-cols-3">
           {[
             {
-              name: "Starter",
+              nameKey: "landing.pricing.starter" as const,
               price: "$49",
-              description: "For stores getting started with ads",
+              descKey: "landing.pricing.starter.desc" as const,
               features: [
                 "Up to $3K/mo ad spend",
                 "Meta + Google",
@@ -197,9 +185,9 @@ export default function LandingPage() {
               ],
             },
             {
-              name: "Growth",
+              nameKey: "landing.pricing.growth" as const,
               price: "$99",
-              description: "For growing D2C brands",
+              descKey: "landing.pricing.growth.desc" as const,
               popular: true,
               features: [
                 "Up to $20K/mo ad spend",
@@ -211,9 +199,9 @@ export default function LandingPage() {
               ],
             },
             {
-              name: "Scale",
+              nameKey: "landing.pricing.scale" as const,
               price: "$199",
-              description: "For scaling operations",
+              descKey: "landing.pricing.scale.desc" as const,
               features: [
                 "Unlimited ad spend",
                 "All platforms",
@@ -226,28 +214,28 @@ export default function LandingPage() {
             },
           ].map((plan) => (
             <div
-              key={plan.name}
+              key={plan.nameKey}
               className={`rounded-lg border p-8 ${
                 plan.popular ? "border-primary shadow-lg ring-1 ring-primary" : ""
               }`}
             >
               {plan.popular && (
                 <div className="mb-4 inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  Most Popular
+                  {t("landing.pricing.growth.popular")}
                 </div>
               )}
-              <h3 className="text-xl font-semibold">{plan.name}</h3>
+              <h3 className="text-xl font-semibold">{t(plan.nameKey)}</h3>
               <div className="mt-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">/month</span>
+                <span className="text-muted-foreground">{t("landing.pricing.month")}</span>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-              <Link href={signInHref}>
+              <p className="mt-2 text-sm text-muted-foreground">{t(plan.descKey)}</p>
+              <Link href="/auth/signin">
                 <Button
                   className="mt-6 w-full"
                   variant={plan.popular ? "default" : "outline"}
                 >
-                  Start Free Trial
+                  {t("landing.pricing.startTrial")}
                 </Button>
               </Link>
               <ul className="mt-6 space-y-3">
@@ -269,14 +257,14 @@ export default function LandingPage() {
       <section className="border-t bg-primary py-16 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold">
-            Stop Wasting Ad Spend. Start Growing.
+            {t("landing.finalCta.title")}
           </h2>
           <p className="mt-4 text-primary-foreground/80">
-            Join Shopify sellers who replaced their media buyer with AdWing.
+            {t("landing.finalCta.subtitle")}
           </p>
-          <Link href={signInHref}>
+          <Link href="/auth/signin">
             <Button size="lg" variant="secondary" className="mt-8">
-              Start Your Free Trial
+              {t("landing.finalCta.button")}
             </Button>
           </Link>
         </div>
@@ -289,7 +277,7 @@ export default function LandingPage() {
             <div className="h-6 w-6 rounded bg-primary" />
             <span className="font-semibold text-foreground">AdWing</span>
           </div>
-          <p>AI-Powered Advertising Automation for Shopify D2C Sellers</p>
+          <p>{t("landing.footer.tagline")}</p>
           <p>&copy; {new Date().getFullYear()} AdWing. All rights reserved.</p>
         </div>
       </footer>
